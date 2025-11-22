@@ -1,0 +1,46 @@
+﻿@page "/authentication/register"
+
+<section class="min-h-[70vh] grid place-items-center px-4 py-10">
+  <div class="w-full max-w-md">
+    <div class="rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,.08)] border border-black/5 overflow-hidden bg-white/80 mb-8">
+      <div class="px-6 py-4 bg-purple-600/90 text-white text-center">
+        <h4 class="text-lg font-extrabold m-0">Registrarse</h4>
+      </div>
+      <div class="px-6 py-6">
+        <EditForm Model="_user" OnValidSubmit="HandleRegister">
+          <DataAnnotationsValidator />
+          <div class="mb-4">
+            <ValidationMessage For="@(() => _user.FullName)" />
+            <FloatingTextInput type="text" id="username" class="w-full border rounded px-3 py-2" @bind-Value="_user.FullName" Label="Nombre Completo" placeholder="Juan Pérez" />
+          </div>
+          <div class="mb-4">
+            <ValidationMessage For="@(() => _user.Email)" />
+            <FloatingTextInput type="text" id="email" class="w-full border rounded px-3 py-2" @bind-Value="_user.Email" Label="Correo Electrónico" Placeholder="juan@correo.com" />
+          </div>
+          <div class="mb-4">
+            <ValidationMessage For="@(() => _user.Password)" />
+            <FloatingTextInput id="password" class="w-full border rounded px-3 py-2" @bind-Value="_user.Password" Label="Contraseña" Type="Password" Placeholder="Mi Contraseña" />
+          </div>
+          <div class="mb-6">
+            <ValidationMessage For="@(() => _user.ConfirmPassword)" />
+            <FloatingTextInput type="Password" id="confirmPassword" class="w-full border rounded px-3 py-2" @bind-Value="_user.ConfirmPassword" Label="Confirmar Contraseña" placeholder="Confirmar Contraseña" />
+          </div>
+          <button class="w-full inline-flex items-center justify-center rounded bg-purple-600 text-white px-4 py-2.5 font-semibold hover:bg-purple-700 shadow-sm disabled:opacity-60" type="submit" disabled="@_isLoading">Registrarse</button>
+        </EditForm>
+      </div>
+      <div class="px-6 py-4 bg-white/80 text-center">
+        <small>
+          ¿Ya tienes una cuenta?
+          <a href="/authentication/login" class="text-purple-600 font-semibold hover:underline">Iniciar Sesión</a>
+        </small>
+      </div>
+    </div>
+
+    @if (_isLoading)
+    {
+      <div class="fixed inset-0 bg-black/20 backdrop-blur-sm grid place-items-center">
+        <Spinner />
+      </div>
+    }
+  </div>
+</section>

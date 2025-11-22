@@ -1,0 +1,83 @@
+﻿@inject BlazorShop.Web.Shared.Services.Contracts.INewsletterService NewsletterService
+
+<div class="bg-neutral-900 text-neutral-100">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div>
+        <div class="text-lg font-extrabold tracking-wider">GAMERTRADE®</div>
+        <p class="mt-1 text-sm text-neutral-300">TIENDA DE VIDEOJUEGOS</p>
+        <p class="mt-3 text-sm text-neutral-400">Los mejores juegos, precios justos, entrega rápida.</p>
+      </div>
+
+      <div>
+        <div class="text-sm font-semibold uppercase text-neutral-300">Tienda</div>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="new-releases" class="hover:text-white/80">Nuevos Lanzamientos</a></li>
+          <li><a href="todays-deals" class="hover:text-white/80">Ofertas del Día</a></li>
+          <li><a href="my-cart" class="hover:text-white/80">Carrito</a></li>
+          <li><a href="about-us" class="hover:text-white/80">Sobre Nosotros</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="text-sm font-semibold uppercase text-neutral-300">Soporte</div>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="customer-service" class="hover:text-white/80">Servicio al Cliente</a></li>
+          <li><a href="faq" class="hover:text-white/80">Preguntas Frecuentes</a></li>
+          <li><a href="privacy" class="hover:text-white/80">Privacidad</a></li>
+          <li><a href="terms" class="hover:text-white/80">Términos</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="text-sm font-semibold uppercase text-neutral-300">Mantente informado</div>
+        <EditForm Model="this" OnValidSubmit="SubscribeAsync">
+          <div class="mt-3 flex items-center gap-2">
+            <InputText @bind-Value="_email" type="email" class="w-full rounded-md bg-white/10 border border-white/20 px-3 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-white/40" placeholder="Tu correo" />
+            <button type="submit" class="inline-flex items-center rounded bg-white text-neutral-900 px-3 py-2 text-sm font-semibold hover:bg-white/90" disabled="@_isSubmitting">@(_isSubmitting?"Suscribiendo…":"Suscribirse")</button>
+          </div>
+        </EditForm>
+        <p class="mt-2 text-xs text-neutral-400">Al suscribirte aceptas nuestra <a href="privacy" class="underline">Política de Privacidad</a>.</p>
+      </div>
+    </div>
+
+    <div class="mt-8 border-t border-white/10 pt-4 text-xs text-neutral-400 text-center">© @DateTime.UtcNow.Year GamerTrade. Todos los derechos reservados.</div>
+  </div>
+</div>
+
+@code {
+  private string _email = string.Empty;
+  private bool _isSubmitting = false;
+
+  private async Task SubscribeAsync()
+  {
+    if (string.IsNullOrWhiteSpace(_email) || !_email.Contains('@'))
+    {
+        ToastService.ShowErrorToast("Por favor ingresa un correo electrónico válido.");
+        return;
+    }
+
+    try
+    {
+        _isSubmitting = true;
+        var result = await NewsletterService.SubscribeAsync(new BlazorShop.Web.Shared.Models.Newsletter.SubscribeRequest(_email));
+        if (result.Success)
+        {
+            _email = string.Empty;
+            ToastService.ShowSuccessToast("¡Gracias por suscribirte!");
+        }
+        else
+        {
+            ToastService.ShowErrorToast(result.Message ?? "Error en la suscripción.");
+        }
+    }
+    catch
+    {
+        ToastService.ShowErrorToast("Error en la suscripción. Por favor intenta más tarde.");
+    }
+    finally
+    {
+        _isSubmitting = false;
+    }
+  }
+}

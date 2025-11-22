@@ -1,0 +1,177 @@
+﻿@using System.Threading
+@implements IAsyncDisposable
+
+<div class="relative" @onmouseenter="() => _pause = true" @onmouseleave="() => _pause = false">
+    <section id="home" class="relative">
+        <div class="hero-bg">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="min-h-[60vh] flex items-center">
+                    <div class="@(ShowRightVisuals ? "grid md:grid-cols-2 gap-10 items-center w-full" : "w-full")">
+                        <!-- Text column -->
+                        <div class="text-center mx-auto max-w-4xl">
+                            @if (!string.IsNullOrWhiteSpace(_slides[_index].TitleLine1) && !string.IsNullOrWhiteSpace(_slides[_index].TitleLine2))
+                            {
+                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-shadow leading-tight">
+                                    <span class="block">@_slides[_index].TitleLine1</span>
+                                    <span class="block">@_slides[_index].TitleLine2</span>
+                                </h1>
+                            }
+                            else
+                            {
+                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-shadow">@_slides[_index].Title</h1>
+                            }
+
+                            <p class="mt-6 text-neutral-700 max-w-2xl mx-auto text-center text-lg sm:text-xl">@_slides[_index].Subtitle</p>
+
+                            <div class="mt-10 flex justify-center">
+                                <a href="@_slides[_index].CtaHref" class="inline-flex items-center rounded-md bg-purple-600 px-6 py-3 text-white font-semibold hover:bg-purple-700">@_slides[_index].CtaText</a>
+                            </div>
+
+                            <!-- Feature badges under CTA -->
+                            <div class="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-neutral-700">
+                                <div class="inline-flex items-center gap-2 bg-white/60 rounded-full px-3 py-1 border border-white/60 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M3 12l3 3 3-3-3-3-3 3Z"/></svg>
+                                    Envío Gratis
+                                </div>
+                                <div class="inline-flex items-center gap-2 bg-white/60 rounded-full px-3 py-1 border border-white/60 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+                                    Soporte 24/7
+                                </div>
+                                <div class="inline-flex items-center gap-2 bg-white/60 rounded-full px-3 py-1 border border-white/60 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                                    Pago Seguro
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (ShowRightVisuals)
+                        {
+                            <!-- Visual column -->
+                            <div class="hidden md:block">
+                                @switch (_slides[_index].Visual)
+                                {
+                                    case VisualType.GradientCard:
+                                        <div class="aspect-[4/3] rounded-3xl bg-gradient-to-br from-purple-100 to-indigo-300 shadow-2xl border border-white/40"></div>
+                                        break;
+                                    case VisualType.ProductStack:
+                                        <div class="relative aspect-[4/3]">
+                                            <div class="absolute inset-0 rounded-3xl bg-white/60 blur-xl"></div>
+                                            <div class="absolute left-6 right-6 top-8 h-40 rounded-2xl bg-white/90 border shadow-md"></div>
+                                            <div class="absolute left-10 right-10 top-24 h-40 rounded-2xl bg-white/90 border shadow-lg rotate-1"></div>
+                                            <div class="absolute left-14 right-14 top-40 h-40 rounded-2xl bg-white/90 border shadow-xl -rotate-1"></div>
+                                        </div>
+                                        break;
+                                    case VisualType.DiscountBadge:
+                                        <div class="aspect-[4/3] grid place-items-center">
+                                            <div class="relative">
+                                                <div class="h-56 w-56 rounded-full bg-purple-400/90 shadow-2xl grid place-items-center border border-white/60">
+                                                    <div class="text-center">
+                                                        <div class="text-5xl font-black text-white">-30%</div>
+                                                        <div class="text-sm font-semibold tracking-wide text-white">Oferta de Verano</div>
+                                                    </div>
+                                                </div>
+                                                <div class="absolute -top-3 -right-3 h-10 w-10 rounded-full bg-white grid place-items-center shadow">🔥</div>
+                                            </div>
+                                        </div>
+                                        break;
+                                    case VisualType.PromoBanner:
+                                        <div class="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-white/40">
+                                            @if (!string.IsNullOrWhiteSpace(_slides[_index].ImageUrl))
+                                            {
+                                                <img src="@_slides[_index].ImageUrl" alt="promo" class="absolute inset-0 h-full w-full object-cover" />
+                                            }
+                                            <div class="absolute inset-0 bg-gradient-to-tr from-black/20 to-white/10"></div>
+                                            @if (!string.IsNullOrWhiteSpace(_slides[_index].BadgeText))
+                                            {
+                                                <div class="absolute top-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-neutral-800 shadow">
+                                                    <span>@_slides[_index].BadgeText</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        break;
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- arrows centered inside container -->
+        <div class="pointer-events-none absolute inset-0">
+            <div class="mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                <button class="pointer-events-auto h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-purple-300/90 grid place-items-center text-neutral-700 shadow hover:bg-purple-300" @onclick="Prev" aria-label="Diapositiva anterior">‹</button>
+                <button class="pointer-events-auto h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-purple-300/90 grid place-items-center text-neutral-700 shadow hover:bg-purple-300" @onclick="Next" aria-label="Siguiente diapositiva">›</button>
+            </div>
+        </div>
+
+        <!-- dots -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-2">
+            @for (var i = 0; i < _slides.Count; i++)
+            {
+                <button class="h-2.5 w-2.5 rounded-full @(i==_index?"bg-purple-600":"bg-neutral-300 hover:bg-neutral-400")" @onclick="(() => GoTo(i))" aria-label="Ir a diapositiva @(i+1)"></button>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter]
+    public bool ShowRightVisuals { get; set; } = false;
+
+    private readonly List<HeroSlide> _slides = new()
+    {
+        new("COMIENZA TU AVENTURA GAMER", "Descubre una amplia gama de videojuegos adaptados a tus gustos.", "COMPRAR AHORA", "#latest", VisualType.GradientCard, TitleLine1: "COMIENZA TU AVENTURA", TitleLine2: "GAMER"),
+        new("NUEVOS LANZAMIENTOS ESTA SEMANA", "Juegos seleccionados especialmente para ti.", "VER NUEVOS LANZAMIENTOS", "new-releases", VisualType.ProductStack),
+        new("OFERTAS IMPERDIBLES", "Ahorra en grande con ofertas por tiempo limitado.", "OFERTAS DEL DÍA", "todays-deals", VisualType.DiscountBadge),
+        new("REGRESO A CLASES", "Ahorra en juegos educativos y más.", "COMPRAR AHORA", "search-result/School", VisualType.PromoBanner, "images/banners/back-to-school.png", "-25% DESC"),
+        new("VENTA FLASH DE FIN DE SEMANA", "Tiempo limitado, stock limitado.", "AGARRAR OFERTAS", "todays-deals", VisualType.PromoBanner, "images/banners/flash-sale.png", "FLASH • 48H")
+    };
+
+    private int _index = 0;
+    private PeriodicTimer? _timer;
+    private bool _pause;
+
+    protected override void OnInitialized()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(6));
+        _ = AutoRotateAsync();
+    }
+
+    private async Task AutoRotateAsync()
+    {
+        try
+        {
+            while (_timer != null && await _timer.WaitForNextTickAsync())
+            {
+                if (_pause) { continue; }
+                _index = (_index + 1) % _slides.Count;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch { }
+    }
+
+    private void Next() => _index = (_index + 1) % _slides.Count;
+    private void Prev() => _index = (_index - 1 + _slides.Count) % _slides.Count;
+    private void GoTo(int i) { if (i>=0 && i<_slides.Count) _index = i; }
+
+    public ValueTask DisposeAsync()
+    {
+        _timer?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private record HeroSlide(
+        string Title,
+        string Subtitle,
+        string CtaText,
+        string CtaHref,
+        VisualType Visual,
+        string? ImageUrl = null,
+        string? BadgeText = null,
+        string? TitleLine1 = null,
+        string? TitleLine2 = null);
+
+    private enum VisualType { GradientCard, ProductStack, DiscountBadge, PromoBanner }
+}

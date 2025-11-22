@@ -1,0 +1,375 @@
+﻿@page "/profile"
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-6">
+    <div class="mt-6 bg-white/80 rounded-xl shadow">
+        <div class="px-6 py-4 border-b">
+            <h1 class="text-2xl font-bold text-center">Mi Perfil</h1>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+            <!-- Side Navigation Menu -->
+            <aside class="space-y-2">
+                <div class="rounded-lg border">
+                    <div class="px-4 py-2 bg-purple-600 text-white text-center font-semibold">Menú</div>
+                    <ul class="divide-y">
+                        <li class="px-4 py-2 @(ActiveTab == "profile" ? "bg-neutral-100 font-semibold" : null)">
+                            <button class="text-left w-full" @onclick='() => SwitchTab("profile")'>Detalles del Perfil</button>
+                        </li>
+                        <li class="px-4 py-2 @(ActiveTab == "edit" ? "bg-neutral-100 font-semibold" : null)">
+                            <button class="text-left w-full" @onclick='() => SwitchTab("edit")'>Editar Perfil</button>
+                        </li>
+                        <li class="px-4 py-2 @(ActiveTab == "orders" ? "bg-neutral-100 font-semibold" : null)">
+                            <button class="text-left w-full" @onclick='() => SwitchTab("orders")'>Mis Pedidos</button>
+                        </li>
+                        <li class="px-4 py-2 @(ActiveTab == "password" ? "bg-neutral-100 font-semibold" : null)">
+                            <button class="text-left w-full" @onclick='() => SwitchTab("password")'>Cambiar Contraseña</button>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Content Section -->
+            <main class="md:col-span-2">
+                <div class="shadow p-4 rounded-lg bg-white/80">
+                    @if (ActiveTab == "profile")
+                    {
+                        <div>
+                            <h4 class="text-neutral-900 font-bold">Detalles del Perfil</h4>
+                            <div class="p-4 rounded border mt-2">
+                                <div class="text-center mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-neutral-700 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M6 22c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+                                    </svg>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <p><strong>Nombre de usuario:</strong></p>
+                                    <p class="text-right">@_userName</p>
+                                </div>
+                                <hr class="my-2" />
+                                <div class="grid grid-cols-2 gap-2">
+                                    <p><strong>Correo:</strong></p>
+                                    <p class="text-right">@_userEmail</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (ActiveTab == "edit")
+                    {
+                        <div>
+                            <h4 class="text-neutral-900 font-bold">Editar Perfil</h4>
+                            <EditForm Model="@_updateProfile" OnValidSubmit="UpdateProfileAsync">
+                                <DataAnnotationsValidator />
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <ValidationMessage For="@(() => _updateProfile.FullName)" />
+                                        <FloatingTextInput class="w-full border rounded px-3 py-2" @bind-Value="_updateProfile.FullName" Label="Nombre Completo" Placeholder="Juan Pérez" />
+                                    </div>
+                                    <div>
+                                        <ValidationMessage For="@(() => _updateProfile.Email)" />
+                                        <FloatingTextInput class="w-full border rounded px-3 py-2" @bind-Value="_updateProfile.Email" Label="Correo Electrónico" Type="text" Placeholder="juan@correo.com" />
+                                    </div>
+                                    <div>
+                                        <FloatingTextInput class="w-full border rounded px-3 py-2" @bind-Value="_updateProfile.PhoneNumber" Label="Teléfono (opcional)" Type="text" Placeholder="+57 ..." />
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex gap-2">
+                                    <button type="submit" class="inline-flex items-center rounded bg-purple-600 text-white px-4 py-2 font-semibold hover:bg-purple-700">Guardar Cambios</button>
+                                    <button type="button" class="inline-flex items-center rounded bg-neutral-200 text-neutral-900 px-4 py-2 font-semibold hover:bg-neutral-300" @onclick='() => SwitchTab("profile")'>Cancelar</button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
+                    else if (ActiveTab == "orders")
+                    {
+                        <div>
+                            <h4 class="text-neutral-900 font-bold">Mis Pedidos</h4>
+
+                            @if (_orders is not null && _orders.Any())
+                            {
+                                <div class="mt-3 mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <div>
+                                            <label class="block text-xs text-neutral-600">Estado</label>
+                                            <select class="w-full border rounded px-2 py-1" @bind="_statusFilter">
+                                                <option value="">Todos</option>
+                                                <option value="PendingShipment">Pendiente de Envío</option>
+                                                <option value="Shipped">Enviado</option>
+                                                <option value="InTransit">En Tránsito</option>
+                                                <option value="OutForDelivery">En Reparto</option>
+                                                <option value="Delivered">Entregado</option>
+                                            </select>
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <label class="block text-xs text-neutral-600">Buscar por Referencia</label>
+                                            <input class="w-full border rounded px-2 py-1" placeholder="ej. BT-..." @bind="_refQuery" />
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 justify-end">
+                                        <button class="px-2 py-1 rounded border hover:bg-neutral-50" @onclick="PrevPage" disabled="@(_page <= 1)">Anterior</button>
+                                        <span class="text-sm text-neutral-600">Página @_page de @_totalPages</span>
+                                        <button class="px-2 py-1 rounded border hover:bg-neutral-50" @onclick="NextPage" disabled="@(_page >= _totalPages)">Siguiente</button>
+                                    </div>
+                                </div>
+
+                                @foreach (var order in _pagedOrders)
+                                {
+                                    <article class="mt-4 rounded border">
+                                        <div class="px-4 py-2 bg-neutral-100 flex items-center justify-between">
+                                            <div class="space-x-3">
+                                                <span class="font-semibold">Ref:</span>
+                                                <span>@order.Reference</span>
+                                                <button class="ml-1 text-blue-700 hover:underline text-xs" title="Copiar referencia" @onclick="() => CopyAsync(order.Reference)">Copiar</button>
+                                                <span class="font-semibold ml-4">Fecha:</span> <span>@(order.CreatedOn.ToLocalTime().ToString("dd.MM.yyyy HH:mm"))</span>
+                                            </div>
+                                            <div>
+                                                <span class="@( $"inline-flex items-center px-2 py-1 rounded text-xs font-semibold {StatusBadge(order.ShippingStatus)}" )">@order.ShippingStatus</span>
+                                                @if (!string.IsNullOrWhiteSpace(order.ShippingCarrier))
+                                                {
+                                                    <div class="text-xs text-neutral-600 mt-1 text-right">
+                                                        Transportadora: <b>@order.ShippingCarrier</b>
+                                                        @if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                                                        {
+                                                            <span class="ml-2">| Rastreo: <b>@order.TrackingNumber</b></span>
+                                                            <button class="ml-1 text-blue-700 hover:underline text-xs" title="Copiar rastreo" @onclick="() => CopyAsync(order.TrackingNumber)">Copiar</button>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="p-4 overflow-x-auto">
+                                            <table class="min-w-full text-sm">
+                                                <thead>
+                                                    <tr class="bg-neutral-50 text-left">
+                                                        <th class="px-3 py-2">Producto</th>
+                                                        <th class="px-3 py-2">Cant</th>
+                                                        <th class="px-3 py-2">Unitario ($)</th>
+                                                        <th class="px-3 py-2">Total ($)</th>
+                                                        <th class="px-3 py-2">Rastreo</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-neutral-200">
+                                                    @foreach (var line in order.Lines)
+                                                    {
+                                                        <tr>
+                                                            <td class="px-3 py-2">@line.ProductName</td>
+                                                            <td class="px-3 py-2">@line.Quantity</td>
+                                                            <td class="px-3 py-2">@line.UnitPrice.ToString("F2")</td>
+                                                            <td class="px-3 py-2">@(line.LineTotal.ToString("F2"))</td>
+                                                            <td class="px-3 py-2">
+                                                                @if (!string.IsNullOrWhiteSpace(order.TrackingUrl))
+                                                                {
+                                                                    <a class="text-blue-700 hover:underline" href="@order.TrackingUrl" target="_blank" rel="noopener">Rastrear</a>
+                                                                }
+                                                                else if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                                                                {
+                                                                    <span class="text-neutral-600">@order.TrackingNumber</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-neutral-500">Envío pendiente</span>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                            <div class="mt-2 text-right font-semibold">Total: $ @order.TotalAmount.ToString("F2")</div>
+                                            <div class="mt-1 text-right text-xs text-neutral-600">
+                                                @if (order.ShippedOn.HasValue)
+                                                {
+                                                    <span class="mr-3">Enviado: @order.ShippedOn.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                                                }
+                                                @if (order.DeliveredOn.HasValue)
+                                                {
+                                                    <span>Entregado: @order.DeliveredOn.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </article>
+                                }
+
+                                <div class="mt-4 flex items-center justify-end gap-2">
+                                    <button class="px-2 py-1 rounded border hover:bg-neutral-50" @onclick="PrevPage" disabled="@(_page <= 1)">Anterior</button>
+                                    <span class="text-sm text-neutral-600">Página @_page de @_totalPages</span>
+                                    <button class="px-2 py-1 rounded border hover:bg-neutral-50" @onclick="NextPage" disabled="@(_page >= _totalPages)">Siguiente</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="rounded-md bg-purple-50 text-purple-800 px-6 py-5 text-center shadow">Aún no tienes pedidos.</div>
+                            }
+                        </div>
+                    }
+                    else if (ActiveTab == "password")
+                    {
+                        <div>
+                            <h4 class="text-neutral-900 font-bold">Cambiar Contraseña</h4>
+                            <EditForm Model="@_changePasswordModel" OnValidSubmit="ChangePasswordAsync">
+                                <DataAnnotationsValidator/>
+                                <div class="mb-3">
+                                    <label class="block text-sm text-neutral-600">Contraseña Actual:</label>
+                                    <InputText type="password" class="w-full border rounded px-3 py-2" @bind-Value="_changePasswordModel.CurrentPassword" requred/>
+                                    <ValidationMessage For="@(() => _changePasswordModel.CurrentPassword)"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="block text-sm text-neutral-600">Nueva Contraseña:</label>
+                                    <InputText type="password" class="w-full border rounded px-3 py-2" @bind-Value="_changePasswordModel.NewPassword" requred/>
+                                    <ValidationMessage For="@(() => _changePasswordModel.NewPassword)"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="block text-sm text-neutral-600">Confirmar Nueva Contraseña:</label>
+                                    <InputText type="password" class="w-full border rounded px-3 py-2" @bind-Value="_changePasswordModel.ConfirmPassword" required/>
+                                    <ValidationMessage For="@(() => _changePasswordModel.ConfirmPassword)"/>
+                                </div>
+                                <button type="submit" class="inline-flex items-center justify-center w-full rounded bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700">Cambiar Contraseña</button>
+                            </EditForm>
+                        </div>
+                    }
+                </div>
+            </main>
+        </div>
+    </div>
+</section>
+
+<style>
+    .active-tab { background-color: rgba(0, 123, 255, 0.1); font-weight: bold; }
+    .active-tab button { color: #007bff !important; }
+</style>
+
+@code {
+    private string ActiveTab = "profile";
+    private PasswordChangeModel _changePasswordModel = new();
+    private UpdateProfileModel _updateProfile = new();
+    private string _userEmail = string.Empty;
+    private string _userName = string.Empty;
+    private IEnumerable<GetOrderItem> _orderItems = new List<GetOrderItem>();
+    private IEnumerable<GetOrder> _orders = Array.Empty<GetOrder>();
+
+    private string _statusFilter = string.Empty;
+    private string _refQuery = string.Empty;
+    private int _page = 1;
+    private int _pageSize = 5;
+    private int _totalPages = 1;
+    private IEnumerable<GetOrder> _pagedOrders = Array.Empty<GetOrder>();
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+
+        var emailClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
+        if (emailClaim != null)
+        {
+            _userEmail = emailClaim.Value;
+            _updateProfile.Email = _userEmail;
+        }
+
+        var fullNameClaim = user.Claims.FirstOrDefault(c => c.Type == "FullName");
+        if (fullNameClaim != null)
+        {
+            _updateProfile.FullName = fullNameClaim.Value;
+            _userName = fullNameClaim.Value;
+        }
+        else
+        {
+            _userName = _userEmail;
+        }
+
+        _orderItems = await CartService.GetCheckoutHistoryByUserId();
+
+        try
+        {
+            var client = await HttpClientHelper.GetPrivateClientAsync();
+            var api = new ApiCall { Client = client, Route = Constant.Cart.GetUserOrders, Type = Constant.ApiCallType.Get };
+            var http = await ApiCallHelper.ApiCallTypeCall<object>(api);
+            _orders = http is null || !http.IsSuccessStatusCode
+                ? Array.Empty<GetOrder>()
+                : await ApiCallHelper.GetServiceResponse<IEnumerable<GetOrder>>(http);
+        }
+        catch
+        {
+            _orders = Array.Empty<GetOrder>();
+        }
+
+        ApplyFilter();
+    }
+
+    private IEnumerable<GetOrder> Filtered()
+    {
+        var q = _orders.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(_statusFilter)) q = q.Where(o => string.Equals(o.ShippingStatus, _statusFilter, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(_refQuery)) q = q.Where(o => o.Reference.Contains(_refQuery, StringComparison.OrdinalIgnoreCase));
+        return q.OrderByDescending(o => o.CreatedOn);
+    }
+
+    private void ApplyFilter()
+    {
+        var filtered = Filtered().ToList();
+        _totalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)_pageSize));
+        if (_page > _totalPages) _page = _totalPages;
+        _pagedOrders = filtered.Skip((_page - 1) * _pageSize).Take(_pageSize).ToList();
+        StateHasChanged();
+    }
+
+    private void PrevPage() { if (_page > 1) { _page--; ApplyFilter(); } }
+    private void NextPage() { if (_page < _totalPages) { _page++; ApplyFilter(); } }
+
+    private string StatusBadge(string? status)
+    {
+        return status switch
+        {
+            "Delivered" => "bg-emerald-100 text-emerald-800",
+            "OutForDelivery" => "bg-emerald-50 text-emerald-700",
+            "InTransit" => "bg-blue-50 text-blue-700",
+            "Shipped" => "bg-blue-100 text-blue-800",
+            _ => "bg-neutral-100 text-neutral-700"
+        };
+    }
+
+    private void SwitchTab(string tabName)
+    {
+        ActiveTab = tabName;
+        StateHasChanged();
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        var response = await AuthenticationService.ChangePassword(_changePasswordModel);
+
+        if (response.Success)
+        {
+            ToastService.ShowSuccessToast("Contraseña cambiada exitosamente.");
+            _changePasswordModel = new ();
+        }
+        else
+        {
+            ToastService.ShowErrorToast(response.Message);
+        }
+    }
+
+    private async Task UpdateProfileAsync()
+    {
+        var response = await AuthenticationService.UpdateProfile(_updateProfile);
+        if (response.Success)
+        {
+            ToastService.ShowSuccessToast("Perfil actualizado.");
+            _userEmail = _updateProfile.Email;
+            _userName = _updateProfile.FullName;
+            ActiveTab = "profile";
+        }
+        else
+        {
+            ToastService.ShowErrorToast(response.Message);
+        }
+    }
+
+    private async Task CopyAsync(string text)
+    {
+        try { await JS.InvokeVoidAsync("navigator.clipboard.writeText", text); ToastService.ShowSuccessToast("Copiado"); }
+        catch { ToastService.ShowErrorToast("Error al copiar"); }
+    }
+}
